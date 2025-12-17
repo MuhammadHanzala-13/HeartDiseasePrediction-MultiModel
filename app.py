@@ -44,19 +44,38 @@ st.markdown("""
         color: #FAFAFA !important;
     }
     
-    /* Card-like containers for inputs */
+    /* Card-like containers for inputs - Dark Mode */
     .stNumberInput, .stSelectbox {
-        background-color: white;
+        background-color: #262730; /* Dark grey */
         border-radius: 8px;
+        color: white;
     }
     
+    /* Input field text color override */
+    div[data-baseweb="select"] > div, 
+    input[type="number"] {
+        color: white !important;
+        background-color: #262730 !important;
+    }
+    
+    label {
+        color: #FAFAFA !important;
+    }
+
     /* Metric Cards */
     div[data-testid="metric-container"] {
-        background-color: white;
+        background-color: #262730; /* Dark grey */
         padding: 15px;
         border-radius: 10px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        border: 1px solid #e9ecef;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        border: 1px solid #444;
+    }
+    
+    /* Info box styling (Sidebar insights) */
+    .stAlert {
+        background-color: #262730;
+        color: white;
+        border: 1px solid #444;
     }
     
     /* Highlight the prediction button */

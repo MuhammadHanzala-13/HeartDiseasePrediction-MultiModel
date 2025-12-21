@@ -159,7 +159,7 @@ def user_input_form(df):
         )
 
     with c10:
-        inputs["Restecg"] = st.selectbox(
+        inputs["restecg"] = st.selectbox(
             "Rest ECG",
             [0, 1, 2],
             index=safe_index([0, 1, 2], int(df["restecg"].median()))

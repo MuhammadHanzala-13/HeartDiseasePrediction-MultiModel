@@ -199,11 +199,14 @@ if st.button("Analyze Heart Disease Risk", use_container_width=True):
 
     try:
         scaled_input = scaler.transform(user_df)
-        prediction = model.predict(scaled_input)[0]
+        # Convert back to DataFrame to preserve feature names and avoid warnings
+        scaled_df = pd.DataFrame(scaled_input, columns=FEATURE_NAMES)
+        
+        prediction = model.predict(scaled_df)[0]
 
         probability = None
         if hasattr(model, "predict_proba"):
-            probability = model.predict_proba(scaled_input)[0][1]
+            probability = model.predict_proba(scaled_df)[0][1]
 
         if prediction == 1:
             st.error("High risk of heart disease detected")

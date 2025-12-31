@@ -33,7 +33,9 @@ def plot_confusion_matrix(y_true, y_pred, model_name="Model"):
     ax.set_ylabel("Actual Condition", fontsize=12, labelpad=10, fontweight='bold')
     ax.set_title(f"{model_name}\nConfusion Matrix", fontsize=15, pad=20, fontweight='bold')
     
+    ax.set_xticks([0, 1])
     ax.set_xticklabels(["Healthy", "Disease"], fontsize=10)
+    ax.set_yticks([0, 1])
     ax.set_yticklabels(["Healthy", "Disease"], fontsize=10, verticalalignment='center')
     
     return fig
@@ -100,6 +102,7 @@ def plot_target_distribution(df):
     ax.set_title("Disease Prevalence in Dataset", fontsize=15, pad=20, fontweight='bold')
     ax.set_xlabel("Condition (0: Healthy, 1: Diseased)", fontsize=12, fontweight='bold')
     ax.set_ylabel("Patient Count", fontsize=12, fontweight='bold')
+    ax.set_xticks([0, 1])
     ax.set_xticklabels(["Healthy", "Heart Disease"])
     
     sns.despine()

@@ -34,7 +34,8 @@ def load_models_and_scaler():
     model_files = {
         "Logistic Regression": "logistic_regression_model.pkl",
         "Random Forest": "random_forest_model.pkl",
-        "SVM": "svm_model.pkl"
+        "SVM": "svm_model.pkl",
+        "Ensemble (Consensus)": "ensemble_model.pkl"
     }
 
     models = {}

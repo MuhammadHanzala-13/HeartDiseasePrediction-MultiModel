@@ -1,27 +1,41 @@
-
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
+import numpy as np
 from sklearn.metrics import confusion_matrix, roc_curve, auc
 
 # Set global style for professional look
-sns.set_style("whitegrid")
-plt.rcParams.update({'figure.autolayout': True})
+sns.set_style("white")
+plt.rcParams.update({
+    'figure.autolayout': True,
+    'font.family': 'sans-serif',
+    'axes.edgecolor': '#333333',
+    'axes.labelcolor': '#333333',
+    'xtick.color': '#333333',
+    'ytick.color': '#333333',
+    'axes.titlesize': 14,
+    'axes.labelsize': 12
+})
+
+# Custom Color Palette
+PRIMARY_COLOR = "#2563EB"  # Professional Blue
+SECONDARY_COLOR = "#DC2626" # Alert Red
+ACCENT_COLOR = "#059669"    # Success Green
 
 def plot_confusion_matrix(y_true, y_pred, model_name="Model"):
     cm = confusion_matrix(y_true, y_pred)
-    # Using a clean, professional color map
     fig, ax = plt.subplots(figsize=(6, 5))
     sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", ax=ax, 
-                cbar=False, linewidths=1.5, linecolor='white', 
-                annot_kws={"size": 14, "weight": "bold"}, square=True)
+                cbar=False, linewidths=2, linecolor='white', 
+                annot_kws={"size": 16, "weight": "bold"}, square=True)
     
-    ax.set_xlabel("Predicted Label", fontsize=12, labelpad=10, fontweight='bold')
-    ax.set_ylabel("True Label", fontsize=12, labelpad=10, fontweight='bold')
-    ax.set_title(f"{model_name} - Confusion Matrix", fontsize=14, pad=15, fontweight='bold', color="#333333")
+    ax.set_xlabel("Predicted Condition", fontsize=12, labelpad=10, fontweight='bold')
+    ax.set_ylabel("Actual Condition", fontsize=12, labelpad=10, fontweight='bold')
+    ax.set_title(f"{model_name}\nConfusion Matrix", fontsize=15, pad=20, fontweight='bold')
     
-    # Clean up ticks
-    ax.tick_params(axis='both', which='major', labelsize=10)
+    ax.set_xticklabels(["Healthy", "Disease"], fontsize=10)
+    ax.set_yticklabels(["Healthy", "Disease"], fontsize=10, verticalalignment='center')
+    
     return fig
 
 def plot_roc_curve(y_true, y_score, model_name="Model"):
@@ -30,20 +44,19 @@ def plot_roc_curve(y_true, y_score, model_name="Model"):
     
     fig, ax = plt.subplots(figsize=(6, 5))
     
-    # Plotting the curve with a professional color and thickness
-    ax.plot(fpr, tpr, label=f"AUC = {roc_auc:.2f}", color="#1f77b4", lw=2.5)
-    ax.plot([0, 1], [0, 1], color="gray", lw=1.5, linestyle="--", alpha=0.8)
+    ax.plot(fpr, tpr, label=f"ROC Curve (AUC = {roc_auc:.2f})", color=PRIMARY_COLOR, lw=3)
+    ax.plot([0, 1], [0, 1], color="#94A3B8", lw=1.5, linestyle="--", alpha=0.8)
     
-    ax.set_xlim([-0.02, 1.02])
-    ax.set_ylim([-0.02, 1.02])
+    ax.set_xlim([-0.01, 1.01])
+    ax.set_ylim([-0.01, 1.05])
     
     ax.set_xlabel("False Positive Rate", fontsize=12, labelpad=10, fontweight='bold')
     ax.set_ylabel("True Positive Rate", fontsize=12, labelpad=10, fontweight='bold')
-    ax.set_title(f"{model_name} - ROC Analysis", fontsize=14, pad=15, fontweight='bold', color="#333333")
+    ax.set_title(f"{model_name}\nROC Analysis", fontsize=15, pad=20, fontweight='bold')
     
-    # Improved legend
-    ax.legend(loc="lower right", frameon=True, fontsize=10, fancybox=True, shadow=True)
-    ax.grid(True, linestyle='--', alpha=0.6)
+    ax.legend(loc="lower right", frameon=True, fontsize=10, fancybox=True)
+    ax.grid(True, linestyle=':', alpha=0.4)
+    sns.despine()
     
     return fig
 
@@ -51,26 +64,57 @@ def plot_feature_importance(importances, feature_names, model_name="Random Fores
     df_imp = pd.DataFrame({"Feature": feature_names, "Importance": importances})
     df_imp = df_imp.sort_values(by="Importance", ascending=False)
     
-    fig, ax = plt.subplots(figsize=(8, 6))
+    fig, ax = plt.subplots(figsize=(9, 6))
     
-    # Fixed deprecation warning by assigning hue to x (or y) and legend=False
-    sns.barplot(
-    x="Importance",
-    y="Feature",
-    data=df_imp,
-    ax=ax,
-    palette="viridis"
-)
+    # Using a clean gradient palette
+    colors = sns.color_palette("viridis", len(df_imp))
+    sns.barplot(x="Importance", y="Feature", data=df_imp, ax=ax, hue="Feature", legend=False, palette="viridis")
+    
+    ax.set_title(f"Key Predictors: {model_name}", fontsize=15, pad=20, fontweight='bold')
+    ax.set_xlabel("Significance Score", fontsize=12, labelpad=10, fontweight='bold')
+    ax.set_ylabel("Clinical Feature", fontsize=12, labelpad=10, fontweight='bold')
+    
+    ax.grid(axis='x', linestyle='--', alpha=0.5)
+    sns.despine(left=True, bottom=True)
+    
+    return fig
 
+def plot_correlation_heatmap(df):
+    fig, ax = plt.subplots(figsize=(10, 8))
+    corr = df.corr()
+    mask = np.triu(np.ones_like(corr, dtype=bool))
     
-    ax.set_title(f"Feature Importance - {model_name}", fontsize=14, pad=15, fontweight='bold', color="#333333")
-    ax.set_xlabel("Importance Score", fontsize=12, labelpad=10, fontweight='bold')
-    ax.set_ylabel("Feature", fontsize=12, labelpad=10, fontweight='bold')
+    sns.heatmap(corr, mask=mask, annot=True, fmt=".2f", cmap="coolwarm", 
+                center=0, square=True, linewidths=.5, cbar_kws={"shrink": .8},
+                annot_kws={"size": 8})
     
-    ax.tick_params(axis='y', labelsize=10)
-    ax.grid(axis='x', linestyle='--', alpha=0.7)
+    ax.set_title("Feature Correlation Heatmap", fontsize=15, pad=20, fontweight='bold')
+    return fig
+
+def plot_target_distribution(df):
+    fig, ax = plt.subplots(figsize=(6, 5))
+    counts = df['target'].value_counts()
     
-    # Remove top and right spines for a cleaner look
+    sns.barplot(x=counts.index, y=counts.values, ax=ax, palette=[ACCENT_COLOR, SECONDARY_COLOR], hue=counts.index, legend=False)
+    
+    ax.set_title("Disease Prevalence in Dataset", fontsize=15, pad=20, fontweight='bold')
+    ax.set_xlabel("Condition (0: Healthy, 1: Diseased)", fontsize=12, fontweight='bold')
+    ax.set_ylabel("Patient Count", fontsize=12, fontweight='bold')
+    ax.set_xticklabels(["Healthy", "Heart Disease"])
+    
     sns.despine()
+    return fig
+
+def plot_thalach_vs_age(df):
+    fig, ax = plt.subplots(figsize=(8, 6))
+    sns.scatterplot(data=df, x="age", y="thalach", hue="target", 
+                    palette={0: ACCENT_COLOR, 1: SECONDARY_COLOR}, 
+                    alpha=0.7, s=100, ax=ax)
     
+    ax.set_title("Max Heart Rate vs Age", fontsize=15, pad=20, fontweight='bold')
+    ax.set_xlabel("Age", fontsize=12, fontweight='bold')
+    ax.set_ylabel("Max Heart Rate (thalach)", fontsize=12, fontweight='bold')
+    ax.legend(title="Condition", labels=["Healthy", "Disease"])
+    
+    sns.despine()
     return fig

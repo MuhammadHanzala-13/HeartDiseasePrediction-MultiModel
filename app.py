@@ -5,9 +5,8 @@ import joblib
 from pathlib import Path
 
 from src.visualize import (
-    plot_confusion_matrix,
-    plot_roc_curve,
-    plot_feature_importance
+    plot_confusion_matrix, plot_roc_curve, plot_feature_importance,
+    plot_correlation_heatmap, plot_target_distribution, plot_thalach_vs_age
 )
 
 from sklearn.model_selection import train_test_split
@@ -217,45 +216,79 @@ if st.button("Analyze Heart Disease Risk", use_container_width=True):
     except Exception as e:
         st.error(f"Prediction error: {e}")
 
-# ============================ Model Analytics ============================
-if st.session_state.analyzed:
-    with st.expander("Model Performance Analytics"):
+# -------------------- Analytics Section --------------------
+
+st.markdown("---")
+with st.expander("📊 Advanced Analytics & Data Insights", expanded=False):
+    
+    # --- Tabbed Interface for Analytics ---
+    tab_model, tab_data = st.tabs(["🤖 Model Diagnostics", "📈 Dataset Insights"])
+    
+    with tab_model:
+        st.subheader(f"Strategy: {model_choice}")
+        
+        # Prepare test data
+        # Note: The original code used `df` directly for X and y, then split.
+        # The instruction's code redefines X and y from df.
+        # Using the global FEATURE_NAMES and TARGET_COL for consistency.
         X = df[FEATURE_NAMES]
         y = df[TARGET_COL]
-
-        _, X_test, _, y_test = train_test_split(
-            X, y, test_size=0.2, random_state=42
-        )
-
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
         X_test_scaled = scaler.transform(X_test)
         y_pred = model.predict(X_test_scaled)
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown("#### Confusion Matrix")
+            st.caption("How accurately the model classifies healthy vs diseased patients.")
+            fig_cm = plot_confusion_matrix(y_test, y_pred, model_name=model_choice)
+            st.pyplot(fig_cm)
+            
+        with col2:
+            st.markdown("#### ROC Curve")
+            st.caption("True Positive vs False Positive trade-off.")
+            try:
+                if hasattr(model, "predict_proba"):
+                    y_probs = model.predict_proba(X_test_scaled)[:, 1]
+                else:
+                    # For models like SVM without predict_proba, decision_function can be used
+                    # if it's a binary classifier and provides a score.
+                    # However, the original code only checked for predict_proba.
+                    # Let's keep it consistent with the instruction's provided code.
+                    y_probs = model.decision_function(X_test_scaled)
+                
+                fig_roc = plot_roc_curve(y_test, y_probs, model_name=model_choice)
+                st.pyplot(fig_roc)
+            except Exception: # Catching generic Exception for robustness as in instruction
+                st.warning("ROC data unavailable.")
 
-        tab1, tab2, tab3 = st.tabs(
-            ["Confusion Matrix", "ROC Curve", "Feature Importance"]
-        )
+        if model_choice == "Random Forest":
+            st.divider()
+            st.markdown("#### Feature Importance")
+            st.caption("Which patient attributes most influenced this model's decision.")
+            fig_imp = plot_feature_importance(model.feature_importances_, FEATURE_NAMES, model_name=model_choice)
+            st.pyplot(fig_imp)
 
-        with tab1:
-            fig = plot_confusion_matrix(y_test, y_pred, model_choice)
-            st.pyplot(fig, use_container_width=True)
-
-        with tab2:
-            if hasattr(model, "predict_proba"):
-                y_probs = model.predict_proba(X_test_scaled)[:, 1]
-                fig = plot_roc_curve(y_test, y_probs, model_choice)
-                st.pyplot(fig, use_container_width=True)
-            else:
-                st.info("ROC Curve not available for this model")
-
-        with tab3:
-            if model_choice == "Random Forest":
-                fig = plot_feature_importance(
-                    model.feature_importances_,
-                    FEATURE_NAMES,
-                    model_choice
-                )
-                st.pyplot(fig, use_container_width=True)
-            else:
-                st.info("Feature importance available only for Random Forest")
+    with tab_data:
+        st.subheader("Exploratory Data Analysis")
+        st.markdown("Understanding the underlying health patterns in our patient base.")
+        
+        col_d1, col_d2 = st.columns(2)
+        with col_d1:
+            st.markdown("#### Condition Distribution")
+            fig_target = plot_target_distribution(df)
+            st.pyplot(fig_target)
+            
+        with col_d2:
+            st.markdown("#### Heart Rate vs Age")
+            fig_scatter = plot_thalach_vs_age(df)
+            st.pyplot(fig_scatter)
+            
+        st.divider()
+        st.markdown("#### Global Feature Correlation")
+        st.caption("Heatmap showing how different clinical factors interact.")
+        fig_corr = plot_correlation_heatmap(df)
+        st.pyplot(fig_corr)
 
 # ============================ Help Section ============================
 st.divider()

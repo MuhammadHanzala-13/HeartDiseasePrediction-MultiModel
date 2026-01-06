@@ -238,7 +238,8 @@ with st.expander("📊 Advanced Analytics & Data Insights", expanded=False):
         X = df[FEATURE_NAMES]
         y = df[TARGET_COL]
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-        X_test_scaled = scaler.transform(X_test)
+        X_test_scaled_raw = scaler.transform(X_test)
+        X_test_scaled = pd.DataFrame(X_test_scaled_raw, columns=FEATURE_NAMES)
         y_pred = model.predict(X_test_scaled)
         
         col1, col2 = st.columns(2)
